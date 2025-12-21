@@ -7,24 +7,39 @@ import frappe
 
 
 def after_install():
-	create_administrator_team()
-	create_default_cluster()
+    create_administrator_team()
+    create_default_cluster()
+    initialize_shared_bench_mode()
 
 
 def create_administrator_team():
-	administrator_team = frappe.get_doc(
-		{
-			"doctype": "Team",
-			"name": "Administrator",
-			"user": "Administrator",
-			"enabled": 1,
-			"free_account": 1,
-			"team_members": [{"user": "Administrator"}],
-		}
-	)
-	administrator_team.insert()
+    administrator_team = frappe.get_doc(
+        {
+            "doctype": "Team",
+            "name": "Administrator",
+            "user": "Administrator",
+            "enabled": 1,
+            "free_account": 1,
+            "team_members": [{"user": "Administrator"}],
+        }
+    )
+    administrator_team.insert()
 
 
 def create_default_cluster():
-	default_cluster = frappe.get_doc({"doctype": "Cluster", "name": "Default"})
-	default_cluster.insert()
+    default_cluster = frappe.get_doc({"doctype": "Cluster", "name": "Default"})
+    default_cluster.insert()
+
+
+def initialize_shared_bench_mode():
+    """
+    Initialize shared bench mode if enabled in site config.
+    
+    This sets up virtual servers, benches, and hooks for shared
+    multi-tenancy mode.
+    """
+    try:
+        from press.press.utils import initialize_shared_bench
+        initialize_shared_bench()
+    except Exception as e:
+        frappe.log_error(f"Shared bench initialization skipped: {e}")
