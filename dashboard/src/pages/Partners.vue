@@ -48,13 +48,18 @@ export default {
 					condition: () => Boolean(this.$team.doc.erpnext_partner),
 				},
 				{
+					label: 'Website Details',
+					route: { name: 'PartnerWebsiteDetails' },
+					condition: () => Boolean(this.$team.doc.erpnext_partner),
+				},
+				{
 					label: 'Dashboard',
 					route: { name: 'PartnerDashboard' },
 					condition: () =>
 						Boolean(
 							this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active' &&
-								this.$session.hasPartnerDashboardAccess,
+							this.$team.doc.partner_status === 'Active' &&
+							this.$session.hasPartnerDashboardAccess,
 						),
 				},
 				{
@@ -63,8 +68,8 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active' &&
-								this.$session.hasPartnerCustomerAccess,
+							this.$team.doc.partner_status === 'Active' &&
+							this.$session.hasPartnerCustomerAccess,
 						),
 				},
 				{
@@ -73,8 +78,8 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active' &&
-								this.$session.hasPartnerLeadsAccess,
+							this.$team.doc.partner_status === 'Active' &&
+							this.$session.hasPartnerLeadsAccess,
 						),
 				},
 				{
@@ -83,7 +88,7 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active',
+							this.$team.doc.partner_status === 'Active',
 						),
 				},
 				{
@@ -92,7 +97,7 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active',
+							this.$team.doc.partner_status === 'Active',
 						),
 				},
 				{
@@ -101,8 +106,17 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active' &&
-								this.$session.hasPartnerContributionAccess,
+							this.$team.doc.partner_status === 'Active' &&
+							this.$session.hasPartnerContributionAccess,
+						),
+				},
+				{
+					label: 'Audits',
+					route: { name: 'PartnerAudits' },
+					condition: () =>
+						Boolean(
+							this.$team.doc.erpnext_partner &&
+							this.$team.doc.partner_status === 'Active',
 						),
 				},
 				{
@@ -111,9 +125,9 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.country === 'Kenya' &&
-								this.$team.doc.mpesa_enabled &&
-								this.$team.doc.erpnext_partner &&
-								this.$team.doc.partner_status === 'Active',
+							this.$team.doc.mpesa_enabled &&
+							this.$team.doc.erpnext_partner &&
+							this.$team.doc.partner_status === 'Active',
 						),
 				},
 				{
@@ -122,7 +136,7 @@ export default {
 					condition: () =>
 						Boolean(
 							this.$team.doc.country === 'Kenya' &&
-								this.$team.doc.mpesa_enabled,
+							this.$team.doc.mpesa_enabled,
 						),
 				},
 			],
