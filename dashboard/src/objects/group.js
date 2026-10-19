@@ -3,7 +3,6 @@ import { defineAsyncComponent, h } from 'vue';
 import { toast } from 'vue-sonner';
 import LucideAppWindow from '~icons/lucide/app-window';
 import LucideHardDriveDownload from '~icons/lucide/hard-drive-download';
-import LucideVenetianMask from '~icons/lucide/venetian-mask';
 import LucideRocket from '~icons/lucide/rocket';
 import AddAppDialog from '../components/group/AddAppDialog.vue';
 import ChangeAppBranchDialog from '../components/group/ChangeAppBranchDialog.vue';
@@ -11,8 +10,8 @@ import PatchAppDialog from '../components/group/PatchAppDialog.vue';
 import { getTeam, switchToTeam } from '../data/team';
 import router from '../router';
 import { confirmDialog, icon, renderDialog } from '../utils/components';
-import { getToastErrorMessage } from '../utils/toast';
 import { date, duration } from '../utils/format';
+import { getToastErrorMessage } from '../utils/toast';
 import { getJobsTab } from './common/jobs';
 import { getPatchesTab } from './common/patches';
 import { tagTab } from './common/tags';
@@ -42,7 +41,7 @@ export default {
 	},
 	list: {
 		route: '/groups',
-		title: 'Bench Groups',
+		title: 'Benches',
 		fields: [{ apps: ['app'] }],
 		searchField: 'title',
 		filterControls() {
@@ -102,7 +101,7 @@ export default {
 		],
 		primaryAction() {
 			return {
-				label: 'New Bench Group',
+				label: 'New Bench',
 				variant: 'solid',
 				slots: {
 					prefix: icon('plus'),
@@ -111,18 +110,6 @@ export default {
 					router.push({ name: 'New Release Group' });
 				},
 			};
-		},
-		banner({ listResource: groups }) {
-			if (!groups.data?.length) {
-				return {
-					title: 'Learn how to create a new private bench group and sites',
-					button: {
-						label: 'Read docs',
-						variant: 'outline',
-						link: 'https://docs.frappe.io/cloud/benches/create-new',
-					},
-				};
-			}
 		},
 	},
 	detail: {
@@ -485,13 +472,6 @@ export default {
 							},
 						},
 						{
-							label: 'Apps',
-							format(value, row) {
-								return (row.apps || []).join(', ');
-							},
-							width: '20rem',
-						},
-						{
 							label: 'Duration',
 							fieldname: 'build_duration',
 							format: duration,
@@ -518,16 +498,15 @@ export default {
 								} else if (group.doc.deploy_information.update_available) {
 									let UpdateReleaseGroupDialog = defineAsyncComponent(
 										() =>
-											import(
-												'../components/group/UpdateReleaseGroupDialog.vue'
-											),
+											import('../components/group/UpdateReleaseGroupDialog.vue'),
 									);
 									renderDialog(
 										h(UpdateReleaseGroupDialog, {
 											bench: group.name,
 											lastDeploy: true,
 											onSuccess(candidate) {
-												group.doc.deploy_information.deploy_in_progress = true;
+												group.doc.deploy_information.has_running_release_pipeline = true;
+												group.doc.deploy_information.update_available = false;
 												if (candidate) {
 													group.doc.deploy_information.last_deploy.name =
 														candidate;
@@ -768,69 +747,15 @@ export default {
 				label: 'Dependencies',
 				icon: icon('box'),
 				route: 'bench-dependencies',
-				type: 'list',
-				list: {
-					doctype: 'Release Group Dependency',
-					filters: (releaseGroup) => {
-						return {
-							parenttype: 'Release Group',
-							parent: releaseGroup.name,
-						};
-					},
-					columns: [
-						{
-							label: 'Dependency',
-							fieldname: 'dependency',
-							format(value, row) {
-								return row.title;
-							},
-						},
-						{
-							label: 'Version',
-							fieldname: 'version',
-							suffix(row) {
-								if (!row.is_custom) {
-									return;
-								}
-
-								return h(
-									Tooltip,
-									{
-										text: 'Custom version',
-										placement: 'top',
-										class: 'rounded-full bg-gray-100 p-1',
-									},
-									() => h(icon('alert-circle', 'w-3 h-3'), {}),
-								);
-							},
-						},
-					],
-					rowActions({
-						row,
-						listResource: dependencies,
-						documentResource: releaseGroup,
-					}) {
-						return [
-							{
-								label: 'Edit',
-								onClick() {
-									let DependencyEditorDialog = defineAsyncComponent(
-										() =>
-											import('../components/group/DependencyEditorDialog.vue'),
-									);
-									renderDialog(
-										h(DependencyEditorDialog, {
-											group: releaseGroup.doc,
-											dependency: row,
-											onSuccess() {
-												dependencies.reload();
-											},
-										}),
-									);
-								},
-							},
-						];
-					},
+				type: 'Component',
+				component: defineAsyncComponent(
+					() => import('@/components/group/BenchDependencies.vue'),
+				),
+				props: (releaseGroup) => {
+					return {
+						releaseGroup: releaseGroup.doc.name,
+						releaseGroupDocumentResource: releaseGroup,
+					};
 				},
 			},
 			{
@@ -894,9 +819,7 @@ export default {
 								onClick() {
 									let ConfigEditorDialog = defineAsyncComponent(
 										() =>
-											import(
-												'../components/EnvironmentVariableEditorDialog.vue'
-											),
+											import('../components/EnvironmentVariableEditorDialog.vue'),
 									);
 									renderDialog(
 										h(ConfigEditorDialog, {
@@ -954,7 +877,9 @@ export default {
 					label: 'Impersonate Group Owner',
 					title: 'Impersonate Group Owner', // for label to pop-up on hover
 					slots: {
-						icon: icon(LucideVenetianMask),
+						icon: defineAsyncComponent(
+							() => import('~icons/lucide/venetian-mask'),
+						),
 					},
 					condition: () =>
 						team.doc?.is_desk_user && group.doc.team !== team.name,
@@ -985,7 +910,9 @@ export default {
 								bench: group.name,
 								lastDeploy: group.doc?.deploy_information?.last_deploy,
 								onSuccess(candidate) {
+									// group.doc.deploy_information.has_running_release_pipeline = true;
 									group.doc.deploy_information.deploy_in_progress = true;
+									group.doc.deploy_information.update_available = false;
 									if (candidate) {
 										group.doc.deploy_information.last_deploy = {
 											name: candidate,
@@ -995,6 +922,17 @@ export default {
 							}),
 						);
 					},
+				},
+				{
+					label: 'Validating Deploy',
+					slots: {
+						prefix: () => h(LoadingIndicator, { class: 'w-4 h-4' }),
+					},
+					theme: 'green',
+					condition: () =>
+						!group.doc.deploy_information.deploy_in_progress &&
+						!group.doc.deploy_information.bench_creation_underway &&
+						group.doc.deploy_information.has_running_release_pipeline,
 				},
 				{
 					label: 'Deploy in progress',
