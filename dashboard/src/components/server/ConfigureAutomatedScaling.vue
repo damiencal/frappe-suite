@@ -62,7 +62,7 @@
 
 <script>
 import { getCachedDocumentResource } from 'frappe-ui';
-import Button from 'frappe-ui/src/components/Button/Button.vue';
+import { Button } from 'frappe-ui';
 import { h } from 'vue';
 import { toast } from 'vue-sonner';
 import { confirmDialog } from '../../utils/components';
@@ -177,7 +177,6 @@ export default {
 							{ label: 'Memory', value: 'Memory' },
 						],
 						default: 'CPU',
-						disabled: true,
 						required: true,
 					},
 
